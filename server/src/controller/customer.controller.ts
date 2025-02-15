@@ -55,3 +55,80 @@ export const getAllCustomer = async (req: Request, res: Response): Promise<void>
         res.status(500).send(error)
     }
 }
+
+
+export const deleteCustomer = async (req: Request, res: Response): Promise<void> => {
+    try {
+        const { id } = req.params;
+
+        // Check if the customer exists
+        const customer = await CustomerModel.findById(id);
+        if (!customer) {
+           res.status(404).json({ success: false, message: 'Customer not found' });
+           return 
+        }
+
+        // Delete the customer
+        await CustomerModel.findByIdAndDelete(id);
+
+        res.status(200).json({ success: true, message: 'Customer deleted successfully' });
+    } catch (error) {
+        console.error('Error deleting customer:', error);
+        res.status(500).json({ success: false, message: 'Internal server error' });
+    }
+};
+
+
+export const getSingleCustomer = async (req: Request, res: Response): Promise<void> => {
+    try {
+        const { id } = req.params;
+        const customer = await CustomerModel.findById(id);
+       
+        res.status(200).json({ success: true, data: customer });
+
+
+        
+    } catch (error) {
+        res.status(500).json({ success: false, message: 'Internal server error' });
+
+    }
+}
+
+
+export const updateCustomer = async (req: Request, res: Response): Promise<void> => {
+    try {
+        const { id } = req.params;
+        const { name, email, phone, address } = req.body;
+
+        console.log(req.body);
+
+        // Check if customer exists
+        const existingCustomer = await CustomerModel.findById(id);
+        if (!existingCustomer) {
+            res.status(404).json({ message: "Customer not found." });
+            return;
+        }
+
+        // Update customer details
+        existingCustomer.name = name || existingCustomer.name;
+        existingCustomer.email = email || existingCustomer.email;
+        existingCustomer.phone = phone || existingCustomer.phone;
+        existingCustomer.address = address || existingCustomer.address;
+
+        await existingCustomer.save();
+
+        res.status(200).json({
+            message: "Customer updated successfully",
+            customer: {
+                id: existingCustomer._id,
+                name: existingCustomer.name,
+                email: existingCustomer.email,
+                phone: existingCustomer.phone,
+                address: existingCustomer.address,
+            },
+        });
+    } catch (error) {
+        console.error("Error updating customer:", error);
+        res.status(500).json({ message: "Internal Server Error", error });
+    }
+};

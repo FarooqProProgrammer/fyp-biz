@@ -5,6 +5,7 @@ import authRouter from "./routes/auth.route";
 import connectDb from "./config/connection";
 import path from "path";
 import customerRouter from "./routes/customer.route";
+import serviceRouter from "./routes/service.route";
 
 
 
@@ -37,6 +38,7 @@ app.get("/uploads/:file", (req, res) => {
 // All Routes
 app.use(authRouter)
 app.use(customerRouter)
+app.use(serviceRouter)
 
 
 

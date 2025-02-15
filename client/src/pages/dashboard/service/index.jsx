@@ -8,6 +8,7 @@ import { Search, UserPlus, Download, Filter, Edit, Trash2, Phone } from 'lucide-
 import DashboardLayout from '@/Layout/Provider/DashboardLayout';
 import { useDeleteCustomerMutation, useGetAllCustomerQuery } from '@/redux/services/apiSlice';
 import { toast } from '@/hooks/use-toast';
+import AddService from '@/components/AddService';
 
 const Customer = () => {
     const router = useRouter();
@@ -183,10 +184,7 @@ const Customer = () => {
                                     <Download className="w-4 h-4" />
                                     Export
                                 </Button>
-                                <Button onClick={() => router.push("/dashboard/customer/add-customer")} className="flex items-center gap-2">
-                                    <UserPlus className="w-4 h-4" />
-                                    Add Customer
-                                </Button>
+                                <AddService />
                             </div>
                         </div>
                     </div>

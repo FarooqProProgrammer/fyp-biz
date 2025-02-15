@@ -33,6 +33,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
+import Link from 'next/link';
 
 const menuItems = [
   {
@@ -46,6 +47,12 @@ const menuItems = [
     url: "/dashboard/customer",
     icon: User2,
   },
+  {
+    title: "Service",
+    url: "/dashboard/service",
+    icon: User2,
+  },
+
   
 ];
 
@@ -105,7 +112,7 @@ export function AppSidebar() {
               {item.children.map((child) => (
                 <SidebarMenuItem key={child.title}>
                   <SidebarMenuButton asChild>
-                    <a href={child.url} className="flex items-center justify-between p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg group transition-colors duration-150">
+                    <Link href={child.url} className="flex items-center justify-between p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg group transition-colors duration-150">
                       <div className="flex items-center gap-2">
                         <child.icon className="w-4 h-4 text-gray-500 dark:text-gray-400 group-hover:text-blue-500" />
                         <span className="text-gray-700 dark:text-gray-300 group-hover:text-blue-500">{child.title}</span>
@@ -115,7 +122,7 @@ export function AppSidebar() {
                           {child.badge}
                         </span>
                       )}
-                    </a>
+                    </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}
