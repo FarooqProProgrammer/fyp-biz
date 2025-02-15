@@ -1,11 +1,12 @@
 import { Button } from "@/components/ui/button";
 import { toast } from "@/hooks/use-toast";
-import { useRegisterUserMutation } from "@/redux/services/apiSlice";
+import { useLoginUserMutation } from "@/redux/services/apiSlice";
+import { signIn } from "next-auth/react";
 import { useRouter } from "next/router";
 import React from "react";
 import { useForm } from "react-hook-form";
 
-const Signup = () => {
+const Login = () => {
   const {
     register,
     handleSubmit,
@@ -13,27 +14,54 @@ const Signup = () => {
     reset,
   } = useForm();
 
-  const [registerUser, { isLoading, status }] = useRegisterUserMutation();
+  const [loginUser, { isLoading }] = useLoginUserMutation();
   const router = useRouter();
 
   const onSubmit = async (data) => {
-    const formData = new FormData();
-    formData.append("name", data.name);
-    formData.append("email", data.email);
-    formData.append("password", data.password);
-    if (data.image && data.image[0]) {
-      formData.append("image", data.image[0]);
-    }
-
-    const response = await registerUser(formData);
-    console.log(response);
-    if (status === 201) {
-      reset();
-
-      toast({
-        title: "Scheduled: Catch up",
-        description: "Friday, February 10, 2023 at 5:57 PM",
+    try {
+      const response = await loginUser({
+        email: data.email,
+        password: data.password,
       });
+
+      console.log(response);
+
+      if (!response?.data?.token || !response?.data?.user) {
+        toast({
+          title: "Login Failed",
+          description: "Invalid email or password.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      const signInResponse = await signIn("credentials", {
+        token: response?.data?.token,
+        user: JSON.stringify(response?.data?.user),
+        redirect: false,
+      });
+
+      if (signInResponse?.ok) {
+        reset();
+        toast({
+          title: "Login Successful",
+          description: "Welcome back!",
+        });
+        router.push("/dashboard");
+      } else {
+        toast({
+          title: "Login Failed",
+          description: "Could not sign in. Try again.",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Something went wrong. Please try again.",
+        variant: "destructive",
+      });
+      console.error(error);
     }
   };
 
@@ -41,23 +69,10 @@ const Signup = () => {
     <div className="w-full min-h-screen flex items-center justify-center bg-gray-100 p-4">
       <div className="w-full max-w-md bg-white shadow-lg rounded-2xl p-6 space-y-4">
         <h2 className="text-2xl font-semibold text-center text-gray-800">
-          Create an Account
+          Login to Your Account
         </h2>
 
         <form className="space-y-4" onSubmit={handleSubmit(onSubmit)}>
-          <div>
-            <label className="block text-gray-600 text-sm">Full Name</label>
-            <input
-              type="text"
-              {...register("name", { required: "Name is required" })}
-              className="w-full px-4 py-2 border rounded-lg focus:ring focus:ring-blue-300"
-              placeholder="Enter your name"
-            />
-            {errors.name && (
-              <p className="text-red-500 text-sm">{errors.name.message}</p>
-            )}
-          </div>
-
           <div>
             <label className="block text-gray-600 text-sm">Email</label>
             <input
@@ -96,27 +111,15 @@ const Signup = () => {
             )}
           </div>
 
-          <div>
-            <label className="block text-gray-600 text-sm">Upload Image</label>
-            <input
-              type="file"
-              {...register("image", { required: "Image is required" })}
-              className="w-full px-4 py-2 border rounded-lg focus:ring focus:ring-blue-300"
-            />
-            {errors.image && (
-              <p className="text-red-500 text-sm">{errors.image.message}</p>
-            )}
-          </div>
-
-          <Button type="submit" disable={isLoading}>
-            {isLoading ? "...loading" : "Signup"}
+          <Button type="submit" disabled={isLoading}>
+            {isLoading ? "...loading" : "Login"}
           </Button>
         </form>
 
         <p className="text-sm text-center text-gray-600">
-          Already have an account?{" "}
+          Don't have an account?{" "}
           <a href="#" className="text-blue-500">
-            Login
+            Signup
           </a>
         </p>
       </div>
@@ -124,4 +127,4 @@ const Signup = () => {
   );
 };
 
-export default Signup;
+export default Login;
