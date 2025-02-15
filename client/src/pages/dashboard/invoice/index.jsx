@@ -186,7 +186,7 @@ const Customer = () => {
                                 </Button>
                                 <Button onClick={() => router.push("/dashboard/customer/add-customer")} className="flex items-center gap-2">
                                     <UserPlus className="w-4 h-4" />
-                                    Add Customer
+                                     Generate Invoice
                                 </Button>
                             </div>
                         </div>

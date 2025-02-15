@@ -6,7 +6,7 @@ import CustomerModel from "../models/customer.model";
 export const createCustomer = async (req: Request, res: Response): Promise<void> => {
 
     try {
-        const { name, email, phone, address } = req.body;
+        const { name, email, phone, address,service } = req.body;
 
         console.log(req.body)
 
@@ -25,7 +25,7 @@ export const createCustomer = async (req: Request, res: Response): Promise<void>
             email,
             phone,
             address,
-
+            service
         });
 
         // Save customer to the database
@@ -49,7 +49,7 @@ export const createCustomer = async (req: Request, res: Response): Promise<void>
 
 export const getAllCustomer = async (req: Request, res: Response): Promise<void> => {
     try {
-        const customer = await CustomerModel.find();
+        const customer = await CustomerModel.find().populate("service");
         res.status(201).send(customer)
     } catch (error) {
         res.status(500).send(error)
@@ -98,7 +98,7 @@ export const getSingleCustomer = async (req: Request, res: Response): Promise<vo
 export const updateCustomer = async (req: Request, res: Response): Promise<void> => {
     try {
         const { id } = req.params;
-        const { name, email, phone, address } = req.body;
+        const { name, email, phone, address,service } = req.body;
 
         console.log(req.body);
 
@@ -114,6 +114,7 @@ export const updateCustomer = async (req: Request, res: Response): Promise<void>
         existingCustomer.email = email || existingCustomer.email;
         existingCustomer.phone = phone || existingCustomer.phone;
         existingCustomer.address = address || existingCustomer.address;
+        existingCustomer.service = service || existingCustomer.service;
 
         await existingCustomer.save();
 
@@ -125,6 +126,7 @@ export const updateCustomer = async (req: Request, res: Response): Promise<void>
                 email: existingCustomer.email,
                 phone: existingCustomer.phone,
                 address: existingCustomer.address,
+                service: existingCustomer.service,
             },
         });
     } catch (error) {

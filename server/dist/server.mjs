@@ -1,45 +1,21 @@
-"use strict";
-var __create = Object.create;
-var __defProp = Object.defineProperty;
-var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
-var __getOwnPropNames = Object.getOwnPropertyNames;
-var __getProtoOf = Object.getPrototypeOf;
-var __hasOwnProp = Object.prototype.hasOwnProperty;
-var __copyProps = (to, from, except, desc) => {
-  if (from && typeof from === "object" || typeof from === "function") {
-    for (let key of __getOwnPropNames(from))
-      if (!__hasOwnProp.call(to, key) && key !== except)
-        __defProp(to, key, { get: () => from[key], enumerable: !(desc = __getOwnPropDesc(from, key)) || desc.enumerable });
-  }
-  return to;
-};
-var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__getProtoOf(mod)) : {}, __copyProps(
-  // If the importer is in node compatibility mode or this is not an ESM
-  // file that has been converted to a CommonJS file using a Babel-
-  // compatible transform (i.e. "__esModule" has not been set), then set
-  // "default" to the CommonJS "module.exports" for node compatibility.
-  isNodeMode || !mod || !mod.__esModule ? __defProp(target, "default", { value: mod, enumerable: true }) : target,
-  mod
-));
-
 // src/app.ts
-var import_express4 = __toESM(require("express"));
-var import_cors = __toESM(require("cors"));
-var import_dotenv3 = __toESM(require("dotenv"));
+import express4 from "express";
+import cors from "cors";
+import dotenv3 from "dotenv";
 
 // src/routes/auth.route.ts
-var import_express = __toESM(require("express"));
+import express from "express";
 
 // src/lib/multer.ts
-var import_multer = __toESM(require("multer"));
-var import_path = __toESM(require("path"));
-var storage = import_multer.default.diskStorage({
+import multer from "multer";
+import path from "path";
+var storage = multer.diskStorage({
   destination: (req, file, cb) => {
     cb(null, "uploads/");
   },
   filename: (req, file, cb) => {
     const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
-    cb(null, file.fieldname + "-" + uniqueSuffix + import_path.default.extname(file.originalname));
+    cb(null, file.fieldname + "-" + uniqueSuffix + path.extname(file.originalname));
   }
 });
 var fileFilter = (req, file, cb) => {
@@ -49,12 +25,12 @@ var fileFilter = (req, file, cb) => {
     cb(new Error("Only image files are allowed"));
   }
 };
-var upload = (0, import_multer.default)({ storage, fileFilter });
+var upload = multer({ storage, fileFilter });
 var multer_default = upload;
 
 // src/models/user.model.ts
-var import_mongoose = __toESM(require("mongoose"));
-var UserSchema = new import_mongoose.default.Schema(
+import mongoose from "mongoose";
+var UserSchema = new mongoose.Schema(
   {
     name: {
       type: String,
@@ -78,21 +54,21 @@ var UserSchema = new import_mongoose.default.Schema(
     timestamps: true
   }
 );
-var UserModel = import_mongoose.default.model("user", UserSchema);
+var UserModel = mongoose.model("user", UserSchema);
 var user_model_default = UserModel;
 
 // src/controller/auth.controller.ts
-var import_jsonwebtoken = __toESM(require("jsonwebtoken"));
-var import_bcryptjs = __toESM(require("bcryptjs"));
-var import_dotenv = __toESM(require("dotenv"));
-import_dotenv.default.config();
+import jwt from "jsonwebtoken";
+import bcrypt from "bcryptjs";
+import dotenv from "dotenv";
+dotenv.config();
 var register = async (req, res) => {
   try {
     const { name, email, password } = req.body;
     console.log(req.body);
     const image = req.file ? req.file.path : "";
-    const salt = await import_bcryptjs.default.genSalt(10);
-    const hashedPassword = await import_bcryptjs.default.hash(password, salt);
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(password, salt);
     const existingUser = await user_model_default.findOne({ email });
     if (existingUser) {
       res.status(400).json({ message: "User already exists" });
@@ -114,12 +90,12 @@ var login = async (req, res) => {
       res.status(400).json({ message: "Invalid email or password" });
       return;
     }
-    const isMatch = await import_bcryptjs.default.compare(password, user.password);
+    const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
       res.status(400).json({ message: "Invalid email or password" });
       return;
     }
-    const token = import_jsonwebtoken.default.sign({ id: user._id }, process.env.JWT_SECRET, {
+    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
       expiresIn: "1d"
     });
     const userObject = user.toObject();
@@ -131,21 +107,21 @@ var login = async (req, res) => {
 };
 
 // src/routes/auth.route.ts
-var authRouter = import_express.default.Router();
+var authRouter = express.Router();
 authRouter.post("/register", multer_default.single("image"), register);
 authRouter.post("/login", login);
 var auth_route_default = authRouter;
 
 // src/config/connection.ts
-var import_mongoose2 = __toESM(require("mongoose"));
-var import_dotenv2 = __toESM(require("dotenv"));
-import_dotenv2.default.config();
+import mongoose2 from "mongoose";
+import dotenv2 from "dotenv";
+dotenv2.config();
 var connectDb = async () => {
   try {
     if (!process.env.DATABASE_URI) {
       throw new Error("DATABASE_URI is not defined in environment variables.");
     }
-    await import_mongoose2.default.connect(process.env.DATABASE_URI);
+    await mongoose2.connect(process.env.DATABASE_URI);
     console.log("MongoDB connected successfully!");
   } catch (error) {
     process.exit(1);
@@ -154,14 +130,14 @@ var connectDb = async () => {
 var connection_default = connectDb;
 
 // src/app.ts
-var import_path2 = __toESM(require("path"));
+import path2 from "path";
 
 // src/routes/customer.route.ts
-var import_express2 = __toESM(require("express"));
+import express2 from "express";
 
 // src/models/customer.model.ts
-var import_mongoose3 = __toESM(require("mongoose"));
-var CustomerSchema = new import_mongoose3.default.Schema(
+import mongoose3 from "mongoose";
+var CustomerSchema = new mongoose3.Schema(
   {
     name: {
       type: String,
@@ -185,7 +161,7 @@ var CustomerSchema = new import_mongoose3.default.Schema(
     timestamps: true
   }
 );
-var CustomerModel = import_mongoose3.default.model("customer", CustomerSchema);
+var CustomerModel = mongoose3.model("customer", CustomerSchema);
 var customer_model_default = CustomerModel;
 
 // src/controller/customer.controller.ts
@@ -284,17 +260,17 @@ var updateCustomer = async (req, res) => {
 };
 
 // src/routes/customer.route.ts
-var customerRouter = import_express2.default.Router();
+var customerRouter = express2.Router();
 customerRouter.route("/customer").post(createCustomer).get(getAllCustomer);
 customerRouter.route("/customer/:id").delete(deleteCustomer).get(getSingleCustomer).put(updateCustomer);
 var customer_route_default = customerRouter;
 
 // src/routes/service.route.ts
-var import_express3 = __toESM(require("express"));
+import express3 from "express";
 
 // src/models/service.model.ts
-var import_mongoose4 = __toESM(require("mongoose"));
-var ServiceSchema = new import_mongoose4.default.Schema(
+import mongoose4 from "mongoose";
+var ServiceSchema = new mongoose4.Schema(
   {
     serviceName: {
       type: String,
@@ -305,7 +281,7 @@ var ServiceSchema = new import_mongoose4.default.Schema(
     timestamps: true
   }
 );
-var ServiceModel = import_mongoose4.default.model("Service", ServiceSchema);
+var ServiceModel = mongoose4.model("Service", ServiceSchema);
 var service_model_default = ServiceModel;
 
 // src/controller/service.controller.ts
@@ -361,21 +337,21 @@ var deleteService = async (req, res) => {
 };
 
 // src/routes/service.route.ts
-var serviceRouter = import_express3.default.Router();
+var serviceRouter = express3.Router();
 serviceRouter.route("/service").post(createService).get(getAllService);
 serviceRouter.route("/service/:id").put(updateService).delete(deleteService);
 var service_route_default = serviceRouter;
 
 // src/app.ts
-var app = (0, import_express4.default)();
-import_dotenv3.default.config();
+var app = express4();
+dotenv3.config();
 connection_default();
-app.use(import_express4.default.json());
-app.use((0, import_cors.default)());
-app.use(import_express4.default.static("uploads/"));
+app.use(express4.json());
+app.use(cors());
+app.use(express4.static("uploads/"));
 app.get("/uploads/:file", (req, res) => {
   const fileName = req.params.file;
-  const filePath = import_path2.default.join(__dirname, "uploads", fileName);
+  const filePath = path2.join(__dirname, "uploads", fileName);
   res.sendFile(filePath, (err) => {
     if (err) {
       res.status(404).json({ message: "File not found" });
@@ -388,10 +364,10 @@ app.use(service_route_default);
 var app_default = app;
 
 // src/server.ts
-var import_figlet = __toESM(require("figlet"));
+import figlet from "figlet";
 var PORT = process.env.PORT || 5e3;
 app_default.listen(PORT, async () => {
-  await (0, import_figlet.default)("fyp project", function(err, data) {
+  await figlet("fyp project", function(err, data) {
     if (err) {
       console.log("Something went wrong...");
       console.dir(err);
@@ -401,4 +377,4 @@ app_default.listen(PORT, async () => {
   });
   console.log(`\u{1F680} Server running on http://localhost:${PORT}`);
 });
-//# sourceMappingURL=server.js.map
+//# sourceMappingURL=server.mjs.map

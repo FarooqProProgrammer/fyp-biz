@@ -20,7 +20,9 @@ import {
   LogOut,
   User,
   Box,
-  User2
+  User2,
+  ReceiptCent,
+  ServerIcon
 } from "lucide-react";
 
 import {
@@ -50,8 +52,14 @@ const menuItems = [
   {
     title: "Service",
     url: "/dashboard/service",
-    icon: User2,
+    icon: ServerIcon,
   },
+  {
+    title: "Invoice",
+    url: "/dashboard/invoice",
+    icon: ReceiptCent,
+  },
+
 
   
 ];

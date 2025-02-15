@@ -1,82 +1,46 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { useRouter } from 'next/router';
 import DataTable from 'react-data-table-component';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Search, UserPlus, Download, Filter, Edit, Trash2, Phone } from 'lucide-react';
+import { Search, Download, Filter, Edit, Trash2 } from 'lucide-react';
 import DashboardLayout from '@/Layout/Provider/DashboardLayout';
-import { useDeleteCustomerMutation, useGetAllCustomerQuery } from '@/redux/services/apiSlice';
+import { useDeleteCustomerMutation, useDeleteServiceMutation, useGetAllServiceQuery } from '@/redux/services/apiSlice';
 import { toast } from '@/hooks/use-toast';
 import AddService from '@/components/AddService';
+import UpdateService from '@/components/UpdateService';
 
 const Customer = () => {
-    const router = useRouter();
     const [filterText, setFilterText] = useState('');
+    const { data: services, isLoading } = useGetAllServiceQuery();
+    const [deletemutation] = useDeleteServiceMutation();
 
-    const { data: customer, isLoading } = useGetAllCustomerQuery();
-
-    const [deletemutation] = useDeleteCustomerMutation()
-
-    useEffect(() => {
-        console.log(customer);
-    }, [customer]);
+    // Update modal state
+    const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
+    const [selectedService, setSelectedService] = useState(null);
 
     const columns = [
         {
-            name: 'Customer',
-            cell: row => (
-                <div className="flex items-center gap-3 py-2">
-                    <div>
-                        <p className="font-medium">{row.name}</p>
-                        <div className="flex items-center gap-2 text-sm text-gray-500">
-                            <span>{row.email}</span>
-                        </div>
-                    </div>
-                </div>
-            ),
+            name: 'Id',
+            selector: row => row.index,
             sortable: true,
         },
         {
-            name: 'Contact',
-            cell: row => (
-                <div className="flex items-center gap-2">
-                    <Phone className="w-4 h-4 text-gray-400" />
-                    <span>{row.phone}</span>
-                </div>
-            ),
-        },
-        {
-            name: 'Status',
-            cell: row => (
-                <div className={`px-3 py-1 rounded-full text-sm ${row.status === 'Active' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-700'}`}>
-                    {row.status}
-                </div>
-            ),
+            name: 'Service Name',
+            selector: row => row.serviceName,
             sortable: true,
         },
         {
-            name: 'Orders',
-            cell: row => (
-                <div>
-                    <p className="font-medium">{row.totalOrders}</p>
-                    <p className="text-sm text-gray-500">Last: {row.lastOrder}</p>
-                </div>
-            ),
-            sortable: true,
-        },
-        {
-            name: 'Total Spent',
-            cell: row => (
-                <div className="font-medium">${row.totalSpent.toLocaleString()}</div>
-            ),
+            name: 'Created At',
+            selector: row => row.createdAt,
             sortable: true,
         },
         {
             name: 'Actions',
             cell: row => (
                 <div className="flex items-center gap-2">
-                    <Button onClick={()=>handleNavigate(row?.id)} variant="ghost" size="icon" className="hover:bg-gray-100">
+                    <Button onClick={() => handleEdit(row)} variant="ghost" size="icon" className="hover:bg-gray-100">
                         <Edit className="w-4 h-4" />
                     </Button>
                     <Button onClick={() => handleDelete(row?.id)} variant="ghost" size="icon" className="hover:bg-red-100 hover:text-red-600">
@@ -87,76 +51,40 @@ const Customer = () => {
         },
     ];
 
-
-    const handleNavigate = (id) => {
-        router.push(`/dashboard/customer/${id}`)
-    }
-
+    // Open update modal with selected service data
+    const handleEdit = (service) => {
+        setSelectedService(service);
+        setIsUpdateModalOpen(true);
+    };
 
     const handleDelete = async (id) => {
-
-        console.log(id)
-
-
-        if (window.confirm("Are you sure you want to delete this customer?")) {
+        if (window.confirm("Are you sure you want to delete this service?")) {
             try {
-                await deletemutation({id}).unwrap();
+                await deletemutation({ id }).unwrap();
                 toast({
-                    title: "Customer Delete",
+                    title: "Service Deleted",
                     description: "Success",
                 });
             } catch (error) {
-                console.error("Error deleting customer:", error);
+                console.error("Error deleting service:", error);
                 toast({
-                    title: "Customer Delete",
+                    title: "Service Delete",
                     description: "Error",
-                    variant:"destructive"
+                    variant: "destructive",
                 });
             }
         }
     };
 
-
-    const customStyles = {
-        headRow: {
-            style: {
-                backgroundColor: '#F9FAFB',
-                borderBottom: '1px solid #E5E7EB',
-            },
-        },
-        headCells: {
-            style: {
-                fontSize: '0.875rem',
-                fontWeight: '600',
-                color: '#4B5563',
-                paddingLeft: '1rem',
-                paddingRight: '1rem',
-            },
-        },
-        cells: {
-            style: {
-                paddingLeft: '1rem',
-                paddingRight: '1rem',
-            },
-        },
-    };
-
-    const customerData = customer?.map(cust => ({
-        id: cust._id,
-        name: cust.name,
-        email: cust.email,
-        phone: cust.phone,
-        status: 'Active',
-        lastOrder: new Date(cust.createdAt).toLocaleDateString(),
-        totalOrders: 0,
-        totalSpent: 0,
+    const customerData = services?.service?.map((service, index) => ({
+        index: index + 1,
+        id: service._id,
+        serviceName: service.serviceName,
+        createdAt: new Date(service.createdAt).toLocaleDateString(),
     })) || [];
 
     const filteredData = customerData.filter(
-        item =>
-            item.name.toLowerCase().includes(filterText.toLowerCase()) ||
-            item.email.toLowerCase().includes(filterText.toLowerCase()) ||
-            item.phone.includes(filterText)
+        item => item.serviceName.toLowerCase().includes(filterText.toLowerCase())
     );
 
     return (
@@ -164,12 +92,12 @@ const Customer = () => {
             <Card className="shadow-sm">
                 <CardHeader className="border-b bg-white">
                     <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-                        <CardTitle>Customer Management</CardTitle>
+                        <CardTitle>Service Management</CardTitle>
                         <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
                             <div className="relative">
                                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
                                 <Input
-                                    placeholder="Search customers..."
+                                    placeholder="Search services..."
                                     value={filterText}
                                     onChange={e => setFilterText(e.target.value)}
                                     className="pl-9 w-full sm:w-[300px]"
@@ -193,15 +121,23 @@ const Customer = () => {
                     <DataTable
                         columns={columns}
                         data={filteredData}
-                        customStyles={customStyles}
                         pagination
                         highlightOnHover
                         pointerOnHover
                         responsive
-                        progressPending={isLoading} // Show loader when loading
+                        progressPending={isLoading}
                     />
                 </CardContent>
             </Card>
+
+            {/* Update Service Modal */}
+            {selectedService && (
+                <UpdateService 
+                    open={isUpdateModalOpen} 
+                    onClose={() => setIsUpdateModalOpen(false)} 
+                    service={selectedService} 
+                />
+            )}
         </DashboardLayout>
     );
 };
