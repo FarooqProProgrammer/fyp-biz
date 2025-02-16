@@ -64,11 +64,15 @@ export const login = async (req: Request, res: Response): Promise<void> => {
       return;
     }
 
-   
-
     // Generate JWT token
     const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET as string, {
       expiresIn: "1d",
+    });
+
+    res.cookie("token", token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      maxAge: 24 * 60 * 60 * 1000,
     });
 
     req.session.user = {
@@ -76,16 +80,24 @@ export const login = async (req: Request, res: Response): Promise<void> => {
       name: user.name,
       email: user.email,
       image: user.image,
-      token:token
+      token: token,
     };
 
     // Convert Mongoose document to plain object
     const userObject = user.toObject() as any;
     delete userObject.password; // Remove password field
 
-    res
-      .status(200)
-      .json({ message: "Login successful", token, user: {...userObject,token} });
+    res.status(200).json({
+      message: "Login successful",
+      token,
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        image: user.image,
+        token: token,
+      },
+    });
   } catch (error) {
     res.status(500).json({ message: "Error logging in", error });
   }

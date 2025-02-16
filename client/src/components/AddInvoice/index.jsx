@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useForm, useFieldArray } from "react-hook-form";
 import {
   Dialog,
@@ -26,13 +26,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "../ui/select";
-import { useCreateInvoiceMutation } from "@/redux/services/invoice";
-import { useSession } from "next-auth/react";
+import { parseCookies } from "nookies";
+import apiClient from "@/lib/axios";
 
 const AddInvoice = () => {
-  const { register, control, handleSubmit, watch, setValue } = useForm({
+  const [open, setOpen] = useState(false); // State to manage dialog visibility
+  const { register, control, handleSubmit, watch, setValue, reset } = useForm({
     defaultValues: {
-      clientName: "",
       invoiceDate: new Date(),
       invoiceNumber: "",
       items: [{ description: "", quantity: 1, price: 0 }],
@@ -40,10 +40,8 @@ const AddInvoice = () => {
   });
 
   const { data } = useGetAllCustomerQuery();
-
-  useEffect(() => {
-    console.log(data);
-  }, [data]);
+  const cookies = parseCookies();
+  const token = cookies.token;
 
   const { fields, append } = useFieldArray({
     control,
@@ -57,53 +55,51 @@ const AddInvoice = () => {
     return items.reduce((sum, item) => sum + item.quantity * item.price, 0);
   };
 
-  const [createInvoice, { isLoading }] = useCreateInvoiceMutation();
-  const session = useSession();
-
   const onSubmit = async (formData) => {
     console.log("Invoice Data:", formData);
-
     const data = {
       invoiceAmount: calculateTotal().toFixed(2),
       ...formData,
     };
 
-    const response = await createInvoice({data,token:session?.user?.token});
-    console.log(response)
+    try {
+      const response = await apiClient.post("/invoice", data);
+      console.log("Invoice Created:", response.data);
+      setOpen(false); // Close dialog on success
+      reset(); // Reset form after submission
+    } catch (error) {
+      console.error("Error creating invoice:", error);
+    }
   };
 
   return (
-    <Dialog>
+    <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button className="bg-blue-600 hover:bg-blue-700">
+        <Button onClick={() => setOpen(true)} className="bg-blue-600 hover:bg-blue-700">
           Generate Invoice
         </Button>
       </DialogTrigger>
       <DialogContent className="bg-white sm:max-w-[600px]">
         <DialogHeader>
-          <DialogTitle className="text-2xl font-bold">
-            Generate New Invoice
-          </DialogTitle>
+          <DialogTitle className="text-2xl font-bold">Generate New Invoice</DialogTitle>
         </DialogHeader>
 
         <form onSubmit={handleSubmit(onSubmit)} className="grid gap-6 py-4">
           {/* Client Information */}
           <div className="grid gap-4">
             <h3 className="font-semibold text-lg">Client Information</h3>
-            <div className="grid grid-cols-1 gap-4">
-              <Select onValueChange={(value) => setValue("clientId", value)}>
-                <SelectTrigger className="w-full">
-                  <SelectValue placeholder="Select Client" />
-                </SelectTrigger>
-                <SelectContent>
-                  {data?.map((item, index) => (
-                    <SelectItem key={index} value={item._id}>
-                      {item.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+            <Select onValueChange={(value) => setValue("clientId", value)}>
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Select Client" />
+              </SelectTrigger>
+              <SelectContent>
+                {data?.map((item, index) => (
+                  <SelectItem key={index} value={item._id}>
+                    {item.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
 
           {/* Invoice Details */}
@@ -114,10 +110,7 @@ const AddInvoice = () => {
                 <Label>Invoice Date</Label>
                 <Popover>
                   <PopoverTrigger asChild>
-                    <Button
-                      variant="outline"
-                      className="w-full justify-start text-left font-normal"
-                    >
+                    <Button variant="outline" className="w-full justify-start text-left font-normal">
                       <CalendarIcon className="mr-2 h-4 w-4" />
                       {format(date, "PPP")}
                     </Button>
@@ -134,11 +127,7 @@ const AddInvoice = () => {
               </div>
               <div className="space-y-2">
                 <Label htmlFor="invoiceNumber">Invoice Number</Label>
-                <Input
-                  id="invoiceNumber"
-                  {...register("invoiceNumber")}
-                  placeholder="INV-001"
-                />
+                <Input id="invoiceNumber" {...register("invoiceNumber")} placeholder="INV-001" />
               </div>
             </div>
           </div>
@@ -149,27 +138,20 @@ const AddInvoice = () => {
             {fields.map((item, index) => (
               <div key={item.id} className="grid grid-cols-12 gap-4">
                 <div className="col-span-6">
-                  <Input
-                    placeholder="Item description"
-                    {...register(`items.${index}.description`)}
-                  />
+                  <Input placeholder="Item description" {...register(`items.${index}.description`)} />
                 </div>
                 <div className="col-span-3">
                   <Input
                     type="number"
                     placeholder="Quantity"
-                    {...register(`items.${index}.quantity`, {
-                      valueAsNumber: true,
-                    })}
+                    {...register(`items.${index}.quantity`, { valueAsNumber: true })}
                   />
                 </div>
                 <div className="col-span-3">
                   <Input
                     type="number"
                     placeholder="Price"
-                    {...register(`items.${index}.price`, {
-                      valueAsNumber: true,
-                    })}
+                    {...register(`items.${index}.price`, { valueAsNumber: true })}
                   />
                 </div>
               </div>
@@ -187,14 +169,12 @@ const AddInvoice = () => {
           {/* Total */}
           <div className="flex justify-between items-center border-t pt-4">
             <span className="font-semibold text-lg">Total Amount:</span>
-            <span className="text-xl font-bold">
-              ${calculateTotal().toFixed(2)}
-            </span>
+            <span className="text-xl font-bold">${calculateTotal().toFixed(2)}</span>
           </div>
 
           {/* Actions */}
           <div className="flex justify-end space-x-4">
-            <Button type="button" variant="outline">
+            <Button type="button" variant="outline" onClick={() => setOpen(false)}>
               Cancel
             </Button>
             <Button type="submit" className="bg-blue-600 hover:bg-blue-700">

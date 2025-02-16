@@ -31,7 +31,7 @@ const InvoiceSchema: Schema = new mongoose.Schema(
       required: true,
     },
     invoiceAmount: {
-      type: Number,
+      type: String,
       required: true,
     },
     status: {

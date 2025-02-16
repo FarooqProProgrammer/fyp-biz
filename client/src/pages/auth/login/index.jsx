@@ -5,6 +5,7 @@ import { signIn } from "next-auth/react";
 import { useRouter } from "next/router";
 import React from "react";
 import { useForm } from "react-hook-form";
+import { setCookie } from "nookies";
 
 const Login = () => {
   const {
@@ -34,6 +35,11 @@ const Login = () => {
         });
         return;
       }
+
+      setCookie(null, "token", response?.data?.token, {
+        maxAge: 30 * 24 * 60 * 60,
+        path: "/",
+      });
 
       const signInResponse = await signIn("credentials", {
         token: response?.data?.user?.token,

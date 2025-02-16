@@ -1,7 +1,7 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 
 export const invoiceSlice = createApi({
-  reducerPath: "api",
+  reducerPath: "invoice",
   baseQuery: fetchBaseQuery({ baseUrl: "http://localhost:3001" }),
   tagTypes: ["invoice"],
   endpoints: (builder) => ({
@@ -17,11 +17,11 @@ export const invoiceSlice = createApi({
       }),
       invalidatesTags: ["invoice"], // Correct usage
     }),
-    getAllCustomer: builder.query({
+    getAllInvoice: builder.query({
       query: () => "/invoice",
       providesTags: ["invoice"],
     }),
   }),
 });
 
-export const { useCreateInvoiceMutation, useGetAllCustomerQuery } = invoiceSlice;
+export const { useCreateInvoiceMutation, useGetAllInvoiceQuery } = invoiceSlice;
