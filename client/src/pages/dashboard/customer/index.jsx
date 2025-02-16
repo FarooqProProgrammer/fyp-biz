@@ -6,8 +6,9 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Search, UserPlus, Download, Filter, Edit, Trash2, Phone, ServerIcon } from 'lucide-react';
 import DashboardLayout from '@/Layout/Provider/DashboardLayout';
-import { useDeleteCustomerMutation, useGetAllCustomerQuery } from '@/redux/services/apiSlice';
+
 import { toast } from '@/hooks/use-toast';
+import { useDeleteCustomerMutation, useGetAllCustomerQuery } from '@/redux/services/customerApi';
 
 const Customer = () => {
     const router = useRouter();

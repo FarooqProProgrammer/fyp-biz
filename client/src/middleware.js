@@ -8,5 +8,5 @@ export default withAuth({
 
 // Protect specific pages
 export const config = {
-  matcher: ["/dashboard"], // Add more protected routes if needed
+  matcher: ["/"], // Add more protected routes if needed
 };
