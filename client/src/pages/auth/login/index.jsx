@@ -36,7 +36,7 @@ const Login = () => {
       }
 
       const signInResponse = await signIn("credentials", {
-        token: response?.data?.token,
+        token: response?.data?.user?.token,
         user: JSON.stringify(response?.data?.user),
         redirect: false,
       });

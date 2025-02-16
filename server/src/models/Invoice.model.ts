@@ -1,16 +1,15 @@
 import mongoose, { Document, Schema, Model } from "mongoose";
 
 export interface IInvoice extends Document {
-  customerId: mongoose.Schema.Types.ObjectId;
-  invoiceAmount: number;
+  clientId?: string;
   invoiceNumber: string;
+  invoiceDate: Date;
+  invoiceAmount: number;
   status: "pending" | "paid" | "cancelled";
-  dueDate: Date;
   items: {
     description: string;
     quantity: number;
-    unitPrice: number;
-    total: number;
+    price: number;
   }[];
   createdAt: Date;
   updatedAt: Date;
@@ -18,15 +17,18 @@ export interface IInvoice extends Document {
 
 const InvoiceSchema: Schema = new mongoose.Schema(
   {
-    customerId: {
+    clientId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "Customer",
-      required: true,
+      ref: "customer",
     },
     invoiceNumber: {
       type: String,
       required: true,
       unique: true,
+    },
+    invoiceDate: {
+      type: Date,
+      required: true,
     },
     invoiceAmount: {
       type: Number,
@@ -37,27 +39,22 @@ const InvoiceSchema: Schema = new mongoose.Schema(
       enum: ["pending", "paid", "cancelled"],
       default: "pending",
     },
-    dueDate: {
-      type: Date,
-      required: true,
-    },
     items: [
       {
         description: { type: String, required: true },
         quantity: { type: Number, required: true },
-        unitPrice: { type: Number, required: true },
-        total: { type: Number, required: true },
+        price: { type: Number, required: true },
       },
     ],
   },
   {
     timestamps: true,
-  }
+  },
 );
 
 const InvoiceModel: Model<IInvoice> = mongoose.model<IInvoice>(
   "Invoice",
-  InvoiceSchema
+  InvoiceSchema,
 );
 
 export default InvoiceModel;
