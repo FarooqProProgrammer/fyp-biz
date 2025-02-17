@@ -1,13 +1,16 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
-import { getSession } from "next-auth/react";
+import nookies from "nookies"; // Import nookies
 
 const baseQuery = fetchBaseQuery({
   baseUrl: "http://localhost:3001",
-  prepareHeaders: async (headers) => {
-    const session = await getSession(); // Get user session from NextAuth
-    if (session?.user?.token) {
-      headers.set("Authorization", `Bearer ${session.user.token}`);
+  prepareHeaders: (headers) => {
+    const cookies = nookies.get(); // Get cookies
+    const token = cookies.token; // Assuming the token is stored in the "token" cookie
+
+    if (token) {
+      headers.set("Authorization", `Bearer ${token}`);
     }
+
     return headers;
   },
 });

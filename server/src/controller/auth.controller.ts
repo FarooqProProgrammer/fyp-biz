@@ -3,6 +3,8 @@ import UserModel from "../models/user.model";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcryptjs";
 import dotenv from "dotenv";
+import OtpModel from "../models/otp.model";
+import nodemailer from "nodemailer";
 
 dotenv.config();
 
@@ -36,9 +38,22 @@ export const register = async (
     });
     await newUser.save();
 
-    res
-      .status(201)
-      .json({ message: "User created successfully", user: newUser });
+    const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
+
+    await OtpModel.create({
+      email,
+      otp: otpCode,
+      expiresAt: new Date(Date.now() + 30 * 60 * 1000), // Expires in 5 minutes
+    });
+
+    await sendOtpEmail(email, otpCode);
+
+    res.status(201).json({
+      message: "User registered successfully. OTP sent to email.",
+      user: newUser,
+    });
+
+
   } catch (error) {
     res.status(500).json({ message: "Error creating user", error });
   }
@@ -100,5 +115,31 @@ export const login = async (req: Request, res: Response): Promise<void> => {
     });
   } catch (error) {
     res.status(500).json({ message: "Error logging in", error });
+  }
+};
+
+const sendOtpEmail = async (email: string, otpCode: string) => {
+  try {
+    const transporter = nodemailer.createTransport({
+      host: "localhost",
+      port: 1025,
+      secure: false,
+      auth: {
+        user: "your-email@example.com",
+        pass: "your-email-password",
+      },
+    });
+
+    const mailOptions = {
+      from: '"Your Company" <your-email@example.com>',
+      to: email,
+      subject: "Your OTP Code",
+      text: `Your OTP is: ${otpCode}. It expires in 30 minutes.`,
+    };
+
+    await transporter.sendMail(mailOptions);
+    console.log(`OTP sent to ${email}`);
+  } catch (error) {
+    console.error("Error sending OTP email:", error);
   }
 };

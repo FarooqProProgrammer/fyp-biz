@@ -1,8 +1,20 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
+import { getSession } from "next-auth/react";  // Or use another method to get the token
 
 export const apiSlice = createApi({
   reducerPath: "api",
-  baseQuery: fetchBaseQuery({ baseUrl: "http://localhost:3001" }),
+  baseQuery: fetchBaseQuery({
+    baseUrl: "http://localhost:3001",
+    prepareHeaders: async (headers) => {
+      const session = await getSession();  // Get session using next-auth (or your custom method)
+
+      if (session?.user?.token) {
+        headers.set("Authorization", `Bearer ${session.user.token}`);
+      }
+
+      return headers;
+    },
+  }),
   tagTypes: ["service"],
   endpoints: (builder) => ({
     registerUser: builder.mutation({

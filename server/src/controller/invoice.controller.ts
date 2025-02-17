@@ -4,7 +4,7 @@ import { invoiceSchema } from "../validations/invoiceValidation";
 import nodemailer from "nodemailer";
 import CustomerModel from "../models/customer.model";
 import path from "path";
-import ejs from "ejs"
+import fs from "fs"
 
 
 export const CreateInvoice = async (
@@ -77,6 +77,29 @@ export const getAllSingleQuery = async (
 };
 
 
+export const deletInvoice = async (req: Request, res: Response): Promise<void> => {
+  try {
+      const { id } = req.params;
+
+      // Check if the customer exists
+      const customer = await InvoiceModel.findById(id);
+      if (!customer) {
+         res.status(404).json({ success: false, message: 'Invoice not found' });
+         return 
+      }
+
+      // Delete the customer
+      await InvoiceModel.findByIdAndDelete(id);
+
+      res.status(200).json({ success: true, message: 'Invoice deleted successfully' });
+  } catch (error) {
+      console.error('Error deleting customer:', error);
+      res.status(500).json({ success: false, message: 'Internal server error' });
+  }
+};
+
+
+
 
 const sendInvoiceEmail = async (newInvoice: any, invoice: any) => {
   try {
@@ -100,12 +123,12 @@ const sendInvoiceEmail = async (newInvoice: any, invoice: any) => {
       customer: populatedInvoice,
     };
 
-    const templatePath = path.join(__dirname, "../views", "email.ejs")
+    const templatePath = path.join(__dirname, "../views", "email.html")
+    
 
-    const emailHtml = (await ejs.renderFile(
-      templatePath,
-      templateData,
-    )) as string;
+    let emailHtml = fs.readFileSync(templatePath, "utf8");
+    emailHtml = emailHtml.replace(/{{customer_email}}/g, populatedInvoice?.email);
+
 
     const transporter = nodemailer.createTransport({
       host: "localhost", 

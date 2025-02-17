@@ -36,6 +36,7 @@ import {
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
 import Link from 'next/link';
+import { useRouter } from "next/router";
 
 const menuItems = [
   {
@@ -82,7 +83,8 @@ const bottomItems = [
   }
 ];
 
-export function AppSidebar() {
+const AppSidebar = () => {
+  const router = useRouter();
   const [expandedMenus, setExpandedMenus] = useState({});
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
@@ -143,7 +145,7 @@ export function AppSidebar() {
     return (
       <SidebarMenuItem key={item.title}>
         <SidebarMenuButton asChild>
-          <a href={item.url} className="flex items-center justify-between p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg group transition-colors duration-150">
+          <a href={item.url} className={`flex items-center justify-between p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg group transition-colors duration-150 ${router.pathname === item.url ? "bg-indigo-100 text-indigo-600" : ""}`}>
             <div className="flex items-center gap-2">
               <item.icon className="w-5 h-5 text-gray-600 dark:text-gray-300 group-hover:text-blue-500" />
               <span className={`text-gray-700 dark:text-gray-300 group-hover:text-blue-500 ${isCollapsed ? 'hidden' : 'block'}`}>
@@ -230,6 +232,6 @@ export function AppSidebar() {
       </SidebarContent>
     </Sidebar>
   );
-}
+};
 
 export default AppSidebar;

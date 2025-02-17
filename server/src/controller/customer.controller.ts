@@ -7,7 +7,7 @@ export const createCustomer = async (req: Request, res: Response): Promise<void>
 
     try {
         const { name, email, phone, address,service } = req.body;
-
+        const userId = req.user?.id;
         console.log(req.body)
 
         // Check if customer already exists
@@ -25,7 +25,8 @@ export const createCustomer = async (req: Request, res: Response): Promise<void>
             email,
             phone,
             address,
-            service
+            service,
+            userId
         });
 
         // Save customer to the database
@@ -49,7 +50,10 @@ export const createCustomer = async (req: Request, res: Response): Promise<void>
 
 export const getAllCustomer = async (req: Request, res: Response): Promise<void> => {
     try {
-        const customer = await CustomerModel.find().populate("service");
+        const userId = req.user?.id;
+
+        const customer = await CustomerModel.find({ userId: userId }).populate("service");
+        console.log(customer)
         res.status(201).send(customer)
     } catch (error) {
         res.status(500).send(error)

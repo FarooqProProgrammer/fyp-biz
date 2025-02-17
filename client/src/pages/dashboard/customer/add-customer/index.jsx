@@ -5,11 +5,10 @@ import { Label } from "@/components/ui/label";
 import { useRouter } from "next/router";
 import { Button } from "@/components/ui/button";
 import DashboardLayout from "@/Layout/Provider/DashboardLayout";
-import {
-  useCreateCustomerMutation,
-  useGetAllServiceQuery,
-} from "@/redux/services/apiSlice";
+
 import { toast } from "@/hooks/use-toast";
+import { useCreateCustomerMutation } from "@/redux/services/customerApi";
+import { useGetAllServiceQuery } from "@/redux/services/apiSlice";
 
 const AddCustomer = () => {
   const {
@@ -31,6 +30,8 @@ const AddCustomer = () => {
     const response = await createCustomer(data);
 
     console.log(response);
+
+    
 
     reset();
     toast({

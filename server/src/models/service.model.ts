@@ -7,7 +7,8 @@ const ServiceSchema = new mongoose.Schema(
         serviceName : {
             type: String,
             required:true
-        }
+        },
+         userId: mongoose.Types.ObjectId
     },
     {
         timestamps: true

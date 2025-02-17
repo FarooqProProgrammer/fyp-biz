@@ -4,8 +4,9 @@ import ServiceModel from "../models/service.model";
 export const createService = async (req: Request, res: Response): Promise<void> => {
     try {
         const { serviceName } = req.body;
+        const userId = req.user?.id;
 
-        const service = new ServiceModel({ serviceName })
+        const service = new ServiceModel({ serviceName ,userId })
 
         await service.save();
         res.status(200).json({ message: true, serviceName })
@@ -43,7 +44,12 @@ export const updateService = async (req: Request, res: Response): Promise<void> 
 
 export const getAllService = async (req: Request, res: Response): Promise<void> => {
     try {
-            const service = await ServiceModel.find();
+
+        const userId = req.user?.id;
+
+
+
+            const service = await ServiceModel.find({ userId:userId });
             res.status(200).json({ message: true, service })
 
     } catch (error) {

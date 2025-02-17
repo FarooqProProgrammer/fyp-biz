@@ -1,129 +1,162 @@
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { toast } from "@/hooks/use-toast";
-import { useRegisterUserMutation } from "@/redux/services/apiSlice";
 import { useRouter } from "next/router";
-import React from "react";
-import { useForm } from "react-hook-form";
+import React, { useState } from "react";
+import Link from "next/link";
 
-const Signup = () => {
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-    reset,
-  } = useForm();
-
-  const [registerUser, { isLoading, status }] = useRegisterUserMutation();
+const SignUp = () => {
   const router = useRouter();
+  const [formData, setFormData] = useState({
+    fullName: "",
+    email: "",
+    password: "",
+    confirmPassword: "",
+  });
 
-  const onSubmit = async (data) => {
-    const formData = new FormData();
-    formData.append("name", data.name);
-    formData.append("email", data.email);
-    formData.append("password", data.password);
-    if (data.image && data.image[0]) {
-      formData.append("image", data.image[0]);
-    }
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
 
-    const response = await registerUser(formData);
-    console.log(response);
-   
-      reset();
-
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (formData.password !== formData.confirmPassword) {
       toast({
-        title: "Scheduled: Catch up",
-        description: "Friday, February 10, 2023 at 5:57 PM",
+        title: "Passwords don't match",
+        description: "Please ensure both passwords are the same.",
+        variant: "destructive",
       });
-
-      router.push("/auth/login")
+      return;
+    }
     
+    // Add your signup logic here
+    toast({
+      title: "Account created",
+      description: "Please verify your email to continue.",
+    });
+    router.push("/auth/otp");
   };
 
   return (
-    <div className="w-full min-h-screen flex items-center justify-center bg-gray-100 p-4">
-      <div className="w-full max-w-md bg-white shadow-lg rounded-2xl p-6 space-y-4">
-        <h2 className="text-2xl font-semibold text-center text-gray-800">
-          Create an Account
-        </h2>
-
-        <form className="space-y-4" onSubmit={handleSubmit(onSubmit)}>
-          <div>
-            <label className="block text-gray-600 text-sm">Full Name</label>
-            <input
-              type="text"
-              {...register("name", { required: "Name is required" })}
-              className="w-full px-4 py-2 border rounded-lg focus:ring focus:ring-blue-300"
-              placeholder="Enter your name"
-            />
-            {errors.name && (
-              <p className="text-red-500 text-sm">{errors.name.message}</p>
-            )}
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
+      <div className="w-full max-w-md">
+        <div className="bg-white/80 backdrop-blur-lg shadow-2xl rounded-3xl p-8 space-y-6">
+          {/* Header Section */}
+          <div className="space-y-2 text-center">
+            <h2 className="text-3xl font-bold tracking-tight text-gray-900">
+              Create an Account
+            </h2>
+            <p className="text-gray-500">
+              Join us today and start your journey
+            </p>
           </div>
 
-          <div>
-            <label className="block text-gray-600 text-sm">Email</label>
-            <input
-              type="email"
-              {...register("email", {
-                required: "Email is required",
-                pattern: {
-                  value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
-                  message: "Enter a valid email",
-                },
-              })}
-              className="w-full px-4 py-2 border rounded-lg focus:ring focus:ring-blue-300"
-              placeholder="Enter your email"
-            />
-            {errors.email && (
-              <p className="text-red-500 text-sm">{errors.email.message}</p>
-            )}
+          {/* Form Section */}
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-gray-700">
+                Full Name
+              </label>
+              <Input
+                type="text"
+                name="fullName"
+                placeholder="John Doe"
+                required
+                className="w-full px-4 py-3 rounded-xl border-gray-200 focus:border-indigo-500 focus:ring-indigo-500"
+                onChange={handleChange}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-gray-700">
+                Email
+              </label>
+              <Input
+                type="email"
+                name="email"
+                placeholder="john@example.com"
+                required
+                className="w-full px-4 py-3 rounded-xl border-gray-200 focus:border-indigo-500 focus:ring-indigo-500"
+                onChange={handleChange}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-gray-700">
+                Password
+              </label>
+              <Input
+                type="password"
+                name="password"
+                placeholder="••••••••"
+                required
+                className="w-full px-4 py-3 rounded-xl border-gray-200 focus:border-indigo-500 focus:ring-indigo-500"
+                onChange={handleChange}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-gray-700">
+                Confirm Password
+              </label>
+              <Input
+                type="password"
+                name="confirmPassword"
+                placeholder="••••••••"
+                required
+                className="w-full px-4 py-3 rounded-xl border-gray-200 focus:border-indigo-500 focus:ring-indigo-500"
+                onChange={handleChange}
+              />
+            </div>
+
+            <div className="space-y-4">
+              <Button 
+                type="submit"
+                className="w-full py-6 text-lg font-semibold bg-indigo-600 hover:bg-indigo-700 transition-colors rounded-xl"
+              >
+                Create Account
+              </Button>
+            </div>
+          </form>
+
+          {/* Footer Section */}
+          <div className="space-y-4">
+            <div className="relative">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-gray-200"></div>
+              </div>
+              <div className="relative flex justify-center text-sm">
+                <span className="px-2 bg-white/80 text-gray-500">
+                  Or continue with
+                </span>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <button className="flex items-center justify-center px-4 py-3 border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors">
+                <img src="/google.svg" alt="Google" className="w-5 h-5 mr-2" />
+                Google
+              </button>
+              <button className="flex items-center justify-center px-4 py-3 border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors">
+                <img src="/github.svg" alt="GitHub" className="w-5 h-5 mr-2" />
+                GitHub
+              </button>
+            </div>
+
+            <p className="text-center text-sm text-gray-500">
+              Already have an account?{" "}
+              <Link 
+                href="/auth/login" 
+                className="font-medium text-indigo-600 hover:text-indigo-800 transition-colors"
+              >
+                Sign in
+              </Link>
+            </p>
           </div>
-
-          <div>
-            <label className="block text-gray-600 text-sm">Password</label>
-            <input
-              type="password"
-              {...register("password", {
-                required: "Password is required",
-                minLength: {
-                  value: 6,
-                  message: "Password must be at least 6 characters",
-                },
-              })}
-              className="w-full px-4 py-2 border rounded-lg focus:ring focus:ring-blue-300"
-              placeholder="Enter your password"
-            />
-            {errors.password && (
-              <p className="text-red-500 text-sm">{errors.password.message}</p>
-            )}
-          </div>
-
-          <div>
-            <label className="block text-gray-600 text-sm">Upload Image</label>
-            <input
-              type="file"
-              {...register("image", { required: "Image is required" })}
-              className="w-full px-4 py-2 border rounded-lg focus:ring focus:ring-blue-300"
-            />
-            {errors.image && (
-              <p className="text-red-500 text-sm">{errors.image.message}</p>
-            )}
-          </div>
-
-          <Button type="submit" disable={isLoading}>
-            {isLoading ? "...loading" : "Signup"}
-          </Button>
-        </form>
-
-        <p className="text-sm text-center text-gray-600">
-          Already have an account?{" "}
-          <a href="#" className="text-blue-500">
-            Login
-          </a>
-        </p>
+        </div>
       </div>
     </div>
   );
 };
 
-export default Signup;
+export default SignUp;
