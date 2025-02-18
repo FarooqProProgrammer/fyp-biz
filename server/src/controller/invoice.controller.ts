@@ -4,8 +4,7 @@ import { invoiceSchema } from "../validations/invoiceValidation";
 import nodemailer from "nodemailer";
 import CustomerModel from "../models/customer.model";
 import path from "path";
-import fs from "fs"
-
+import fs from "fs";
 
 export const CreateInvoice = async (
   req: Request,
@@ -13,6 +12,7 @@ export const CreateInvoice = async (
 ): Promise<void> => {
   try {
     console.log(req.body);
+    const userId = req.user?.id;
 
     const { error, value } = invoiceSchema.validate(req.body, {
       abortEarly: false,
@@ -27,12 +27,20 @@ export const CreateInvoice = async (
       return;
     }
 
-    const newInvoice = new InvoiceModel(req.body);
-    console.log(newInvoice)
+    const payload = {
+      ...req.body,
+      userId,
+    };
+
+    const newInvoice = new InvoiceModel(payload);
+    console.log(newInvoice);
     await newInvoice.save();
 
-    // Send invoice email to the customer
-    await sendInvoiceEmail(newInvoice,newInvoice?.clientId?.toString());
+    if (newInvoice?.clientId) {
+      await sendInvoiceEmail(newInvoice, newInvoice.clientId.toString());
+    } else {
+      console.error("Client ID is undefined.");
+    }
 
     res.status(201).json({ success: true, invoice: newInvoice });
   } catch (error) {
@@ -42,22 +50,30 @@ export const CreateInvoice = async (
   }
 };
 
-
-
-export const getAllInvoice = async (
-  req: Request,
-  res: Response,
-): Promise<void> => {
+export const getAllInvoice = async (req: Request, res: Response): Promise<void> => {
   try {
-    const invoices = await InvoiceModel.find().populate("clientId");
-    console.log(invoices)
+  
+    if (!req.user || !req.user.id) {
+       res.status(401).json({ success: false, message: "Unauthorized" });
+       return
+    }
+
+    const userId = req.user.id;
+    console.log("Fetching invoices for user:", userId);
+
+    const invoices = await InvoiceModel.find({ userId })
+      .populate("clientId") 
+      .populate("userId");
+
+    console.log("Invoices fetched:", invoices.length);
+    
     res.status(200).json({ success: true, invoices });
   } catch (error) {
-    res
-      .status(500)
-      .json({ success: false, message: "Internal Server Error", error });
+    console.error("Error fetching invoices:", error);
+    res.status(500).json({ success: false, message: "Internal Server Error", error });
   }
 };
+
 
 export const getAllSingleQuery = async (
   req: Request,
@@ -76,39 +92,41 @@ export const getAllSingleQuery = async (
   }
 };
 
-
-export const deletInvoice = async (req: Request, res: Response): Promise<void> => {
+export const deletInvoice = async (
+  req: Request,
+  res: Response,
+): Promise<void> => {
   try {
-      const { id } = req.params;
+    const { id } = req.params;
 
-      // Check if the customer exists
-      const customer = await InvoiceModel.findById(id);
-      if (!customer) {
-         res.status(404).json({ success: false, message: 'Invoice not found' });
-         return 
-      }
+    // Check if the customer exists
+    const customer = await InvoiceModel.findById(id);
+    if (!customer) {
+      res.status(404).json({ success: false, message: "Invoice not found" });
+      return;
+    }
 
-      // Delete the customer
-      await InvoiceModel.findByIdAndDelete(id);
+    // Delete the customer
+    await InvoiceModel.findByIdAndDelete(id);
 
-      res.status(200).json({ success: true, message: 'Invoice deleted successfully' });
+    res
+      .status(200)
+      .json({ success: true, message: "Invoice deleted successfully" });
   } catch (error) {
-      console.error('Error deleting customer:', error);
-      res.status(500).json({ success: false, message: 'Internal server error' });
+    console.error("Error deleting customer:", error);
+    res.status(500).json({ success: false, message: "Internal server error" });
   }
 };
 
-
-
-
-const sendInvoiceEmail = async (newInvoice: any, invoice: any) => {
+const sendInvoiceEmail = async (newInvoice: any, clientId: string) => {
   try {
-    // Populate client details
-    const populatedInvoice = await CustomerModel.findById(invoice);
-    console.log(populatedInvoice);
+    // Fetch client details using clientId, not invoiceId
+    const populatedInvoice = await CustomerModel.findById(clientId);
+
+    console.log("Populated Invoice:", populatedInvoice);
 
     if (!populatedInvoice) {
-      console.error("Client details not found for invoice:", invoice._id);
+      console.error("Client details not found for clientId:", clientId);
       return;
     }
 
@@ -123,15 +141,15 @@ const sendInvoiceEmail = async (newInvoice: any, invoice: any) => {
       customer: populatedInvoice,
     };
 
-    const templatePath = path.join(__dirname, "../views", "email.html")
-    
-
+    const templatePath = path.join(__dirname, "../views", "email.html");
     let emailHtml = fs.readFileSync(templatePath, "utf8");
-    emailHtml = emailHtml.replace(/{{customer_email}}/g, populatedInvoice?.email);
-
+    emailHtml = emailHtml.replace(
+      /{{customer_email}}/g,
+      populatedInvoice?.email,
+    );
 
     const transporter = nodemailer.createTransport({
-      host: "localhost", 
+      host: "localhost",
       port: 1025,
       secure: false,
       auth: {

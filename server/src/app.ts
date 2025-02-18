@@ -9,6 +9,7 @@ import serviceRouter from "./routes/service.route";
 import MongoStore from "connect-mongo";
 import session from "express-session";
 import invoiceRouter from "./routes/invoice.route";
+import SalesRouter from "./routes/sales.route";
 
 const app: Express = express();
 
@@ -50,5 +51,6 @@ app.use(authRouter);
 app.use(customerRouter);
 app.use(serviceRouter);
 app.use(invoiceRouter);
+app.use(SalesRouter);
 
 export default app;
