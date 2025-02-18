@@ -102,36 +102,25 @@ export const getSingleCustomer = async (req: Request, res: Response): Promise<vo
 export const updateCustomer = async (req: Request, res: Response): Promise<void> => {
     try {
         const { id } = req.params;
-        const { name, email, phone, address,service } = req.body;
+        const { name, email, phone, address, service } = req.body;
 
         console.log(req.body);
 
-        // Check if customer exists
-        const existingCustomer = await CustomerModel.findById(id);
-        if (!existingCustomer) {
+    
+        const updatedCustomer = await CustomerModel.findByIdAndUpdate(
+            id,
+            { $set: { name, email, phone, address, service } },
+            { new: true, runValidators: true }
+        );
+
+        if (!updatedCustomer) {
             res.status(404).json({ message: "Customer not found." });
             return;
         }
 
-        // Update customer details
-        existingCustomer.name = name || existingCustomer.name;
-        existingCustomer.email = email || existingCustomer.email;
-        existingCustomer.phone = phone || existingCustomer.phone;
-        existingCustomer.address = address || existingCustomer.address;
-        existingCustomer.service = service || existingCustomer.service;
-
-        await existingCustomer.save();
-
         res.status(200).json({
             message: "Customer updated successfully",
-            customer: {
-                id: existingCustomer._id,
-                name: existingCustomer.name,
-                email: existingCustomer.email,
-                phone: existingCustomer.phone,
-                address: existingCustomer.address,
-                service: existingCustomer.service,
-            },
+            customer: updatedCustomer,
         });
     } catch (error) {
         console.error("Error updating customer:", error);

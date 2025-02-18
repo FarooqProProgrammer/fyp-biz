@@ -50,7 +50,7 @@ export const getAllInvoice = async (
 ): Promise<void> => {
   try {
     const invoices = await InvoiceModel.find().populate("clientId");
-
+    console.log(invoices)
     res.status(200).json({ success: true, invoices });
   } catch (error) {
     res

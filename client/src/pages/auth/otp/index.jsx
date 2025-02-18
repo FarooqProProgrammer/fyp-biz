@@ -1,5 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { toast } from "@/hooks/use-toast";
+import { useVerifyOtpMutation } from "@/redux/services/apiSlice";
+import Cookies from "js-cookie";
 import { useRouter } from "next/router";
 import React, { useState } from "react";
 import OtpInput from "react-otp-input";
@@ -7,6 +9,9 @@ import OtpInput from "react-otp-input";
 const Otp = () => {
   const [otp, setOtp] = useState("");
   const router = useRouter();
+  const { email } = router.query;
+
+  const [verifyOtp, { isLoading }] = useVerifyOtpMutation();
 
   const handleOtpChange = (value) => {
     setOtp(value);
@@ -16,7 +21,28 @@ const Otp = () => {
   const handleVerifyOtp = async () => {
     console.log("Verifying OTP:", otp);
     // Add API call for OTP verification here
-    if (otp === "1234") {
+
+    if (email) {
+      const res = await verifyOtp({ email, otp }).unwrap();
+      console.log(res);
+      toast({
+        title: "OTP Verified",
+        description: "Your account has been successfully verified.",
+      });
+      router.push("/auth/reset-password?email=" + email);
+    } else {
+      toast({
+        title: "Invalid OTP",
+        description: "Please enter the correct OTP and try again.",
+        variant: "destructive",
+      });
+    }
+
+    let emailInput = Cookies.get("email");
+
+    if (otp) {
+      const res = await verifyOtp({ emailInput, otp }).unwrap();
+      console.log(res);
       toast({
         title: "OTP Verified",
         description: "Your account has been successfully verified.",
@@ -50,8 +76,8 @@ const Otp = () => {
             <OtpInput
               value={otp}
               onChange={handleOtpChange}
-              numInputs={4}
-              renderSeparator={<span className="w-4"                                                                ></span>}
+              numInputs={6}
+              renderSeparator={<span className="w-4"></span>}
               renderInput={(props) => <input {...props} />}
               inputStyle={{
                 width: "3.5rem",
@@ -74,20 +100,23 @@ const Otp = () => {
 
           {/* Action Buttons */}
           <div className="space-y-4">
-            <Button 
-              onClick={handleVerifyOtp} 
+            <Button
+              onClick={handleVerifyOtp}
               className="w-full py-6 text-lg font-semibold bg-indigo-600 hover:bg-indigo-700 transition-colors rounded-xl"
             >
               Verify Code
             </Button>
-            
+
             <div className="text-center">
-              <button 
+              <button
                 className="text-indigo-600 hover:text-indigo-800 text-sm font-medium transition-colors"
-                onClick={() => toast({
-                  title: "New OTP Sent",
-                  description: "A new verification code has been sent to your email.",
-                })}
+                onClick={() =>
+                  toast({
+                    title: "New OTP Sent",
+                    description:
+                      "A new verification code has been sent to your email.",
+                  })
+                }
               >
                 Didn't receive the code? Resend
               </button>
@@ -97,7 +126,10 @@ const Otp = () => {
           {/* Footer Section */}
           <div className="text-center text-sm text-gray-500">
             <p>
-              Having trouble? <button className="text-indigo-600 hover:text-indigo-800 font-medium">Contact Support</button>
+              Having trouble?{" "}
+              <button className="text-indigo-600 hover:text-indigo-800 font-medium">
+                Contact Support
+              </button>
             </p>
           </div>
         </div>

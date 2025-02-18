@@ -5,12 +5,13 @@ import { Label } from "@/components/ui/label";
 import { useRouter } from "next/router";
 import { Button } from "@/components/ui/button";
 import DashboardLayout from "@/Layout/Provider/DashboardLayout";
+
+import { toast } from "@/hooks/use-toast";
 import {
-  useCreateCustomerMutation,
   useGetSingleCustomerQuery,
   useUpdateCustomerMutation,
-} from "@/redux/services/apiSlice";
-import { toast } from "@/hooks/use-toast";
+} from "@/redux/services/customerApi";
+import apiClient from "@/lib/axios";
 
 const AddCustomer = () => {
   const {
@@ -46,9 +47,9 @@ const AddCustomer = () => {
   const onSubmit = async (data) => {
     console.log("Customer Data:", data);
 
-    const response = await createCustomer({id:router.query.id,data});
-
+    const response = await apiClient.put(`/customer/${router.query.id}`, data);
     console.log(response);
+  
 
     reset();
     toast({
@@ -145,7 +146,9 @@ const AddCustomer = () => {
 
               {/* Submit Button (Full-width) */}
               <div className="col-span-1 md:col-span-2">
-                <Button>Update Customer</Button>
+                <Button disabled={isLoading}>
+                  {isLoading ? "Updating..." : "Update Customer"}
+                </Button>
               </div>
             </form>
           </div>

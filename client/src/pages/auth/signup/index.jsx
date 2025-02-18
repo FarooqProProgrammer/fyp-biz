@@ -4,6 +4,8 @@ import { toast } from "@/hooks/use-toast";
 import { useRouter } from "next/router";
 import React, { useState } from "react";
 import Link from "next/link";
+import { useRegisterUserMutation } from "@/redux/services/apiSlice";
+import Cookies from "js-cookie";
 
 const SignUp = () => {
   const router = useRouter();
@@ -12,10 +14,18 @@ const SignUp = () => {
     email: "",
     password: "",
     confirmPassword: "",
+    image: null,
   });
 
+  const [registerUser, { isLoading }] = useRegisterUserMutation();
+
   const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    const { name, value, files } = e.target;
+    if (name === "image") {
+      setFormData({ ...formData, image: files[0] });
+    } else {
+      setFormData({ ...formData, [name]: value });
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -28,13 +38,36 @@ const SignUp = () => {
       });
       return;
     }
-    
-    // Add your signup logic here
-    toast({
-      title: "Account created",
-      description: "Please verify your email to continue.",
-    });
-    router.push("/auth/otp");
+
+    const formDataToSend = new FormData();
+    formDataToSend.append("name", formData.fullName);
+    formDataToSend.append("email", formData.email);
+    formDataToSend.append("password", formData.password);
+    if (formData.image) {
+      formDataToSend.append("image", formData.image);
+    }
+
+    Cookies.set('email', formData.email)
+
+    try {
+      const res = await registerUser(formDataToSend).unwrap();
+      console.log(res);
+
+      toast({
+        title: "Account created",
+        description: "Please verify your email to continue.",
+      });
+
+      router.push("/auth/otp");
+    } catch (error) {
+      console.log(error);
+
+      toast({
+        title: "Registration failed",
+        description: "An error occurred during registration.",
+        variant: "destructive",
+      });
+    }
   };
 
   return (
@@ -52,7 +85,7 @@ const SignUp = () => {
           </div>
 
           {/* Form Section */}
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-4" encType="multipart/form-data">
             <div className="space-y-2">
               <label className="text-sm font-medium text-gray-700">
                 Full Name
@@ -109,40 +142,32 @@ const SignUp = () => {
               />
             </div>
 
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-gray-700">
+                Profile Image
+              </label>
+              <input
+                type="file"
+                name="image"
+                accept="image/*"
+                className="w-full px-4 py-3 rounded-xl border-gray-200 focus:border-indigo-500 focus:ring-indigo-500"
+                onChange={handleChange}
+              />
+            </div>
+
             <div className="space-y-4">
               <Button 
                 type="submit"
                 className="w-full py-6 text-lg font-semibold bg-indigo-600 hover:bg-indigo-700 transition-colors rounded-xl"
+                disabled={isLoading}
               >
-                Create Account
+                {isLoading ? "Creating Account..." : "Create Account"}
               </Button>
             </div>
           </form>
 
           {/* Footer Section */}
           <div className="space-y-4">
-            <div className="relative">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-gray-200"></div>
-              </div>
-              <div className="relative flex justify-center text-sm">
-                <span className="px-2 bg-white/80 text-gray-500">
-                  Or continue with
-                </span>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <button className="flex items-center justify-center px-4 py-3 border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors">
-                <img src="/google.svg" alt="Google" className="w-5 h-5 mr-2" />
-                Google
-              </button>
-              <button className="flex items-center justify-center px-4 py-3 border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors">
-                <img src="/github.svg" alt="GitHub" className="w-5 h-5 mr-2" />
-                GitHub
-              </button>
-            </div>
-
             <p className="text-center text-sm text-gray-500">
               Already have an account?{" "}
               <Link 

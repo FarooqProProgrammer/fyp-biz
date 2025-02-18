@@ -9,6 +9,10 @@ import DashboardLayout from '@/Layout/Provider/DashboardLayout';
 
 import { toast } from '@/hooks/use-toast';
 import { useDeleteCustomerMutation, useGetAllCustomerQuery } from '@/redux/services/customerApi';
+import * as XLSX from "xlsx";
+import { saveAs } from "file-saver";
+
+
 
 const Customer = () => {
     const router = useRouter();
@@ -141,6 +145,23 @@ const Customer = () => {
         },
     };
 
+
+    const exportToExcel = () => {
+        const worksheet = XLSX.utils.json_to_sheet(filteredData); // Convert data to sheet
+        const workbook = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(workbook, worksheet, "Customers"); // Add sheet to workbook
+    
+        // Write the file and convert it to Blob
+        const excelBuffer = XLSX.write(workbook, { bookType: "xlsx", type: "array" });
+        const data = new Blob([excelBuffer], { type: "application/octet-stream" });
+    
+        // Save file
+        saveAs(data, "customers.xlsx");
+    };
+
+
+
+
     const customerData = customer?.map(cust => ({
         id: cust._id,
         name: cust.name,
@@ -181,7 +202,7 @@ const Customer = () => {
                                     <Filter className="w-4 h-4" />
                                     Filter
                                 </Button>
-                                <Button variant="outline" className="flex items-center gap-2">
+                                <Button onClick={exportToExcel} variant="outline" className="flex items-center gap-2">
                                     <Download className="w-4 h-4" />
                                     Export
                                 </Button>

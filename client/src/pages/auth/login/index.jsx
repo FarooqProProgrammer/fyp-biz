@@ -126,6 +126,10 @@ const Login = () => {
                 {isLoading ? "Signing in..." : "Sign in"}
               </Button>
             </div>
+
+            <p  className="text-sm text-gray-600 hover:text-indigo-600 transition-colors">
+              Don't have an account? <Link href={'/auth/signup'} className="text-indigo-600 hover:text-indigo-800 transition-colors">Sign up</Link>
+            </p>
           </form>
         </div>
       </div>

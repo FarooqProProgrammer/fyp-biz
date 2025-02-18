@@ -32,6 +32,30 @@ export const apiSlice = createApi({
         body: userData,
       }),
     }),
+    forgotPassword: builder.mutation({
+      query: (userData) => ({
+        url: "/forgot-password",
+        method: "POST",
+        body: userData,
+      }),
+    }),
+
+
+
+    verifyOtp: builder.mutation({
+      query: (userData) => ({
+        url: "/otp-verify",
+        method: "POST",
+        body: userData,
+      }),
+    }),
+
+    logoutUser: builder.mutation({
+      query: () => ({
+        url: "/logout",
+        method: "POST",
+      }),
+    }),
 
     createService: builder.mutation({
       query: (userData) => ({
@@ -73,4 +97,7 @@ export const {
   useGetAllServiceQuery,
   useUpdateServiceMutation,
   useDeleteServiceMutation,
+  useLogoutUserMutation,
+  useVerifyOtpMutation,
+  useForgotPasswordMutation,
 } = apiSlice;
