@@ -1,7 +1,7 @@
 import express, { Router } from "express"
 import upload from "../lib/multer";
 import { forgotPassword, login, logout, register, verifyOtp } from "../controller/auth.controller";
-const authRouter: Router  = express.Router();
+const authRouter  = express.Router();
 
 
 

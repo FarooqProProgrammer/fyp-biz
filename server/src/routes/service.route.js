@@ -3,7 +3,7 @@ import { createService, deleteService, getAllService, updateService } from "../c
 import { protectRoute } from "../middleware/protect-route";
 
 
-const serviceRouter: Router = express.Router();
+const serviceRouter = express.Router();
 
 
 

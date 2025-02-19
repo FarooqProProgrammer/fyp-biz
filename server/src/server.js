@@ -3,14 +3,14 @@ import figlet from "figlet";
 
 const PORT = process.env.PORT || 5000;
 
-app.listen(PORT, async () => {
-  await figlet("fyp project", function (err, data) {
+app.listen(PORT, () => {
+  figlet("fyp project", (err, data) => {
     if (err) {
-      console.log("Something went wrong...");
-      console.dir(err);
+      console.error("Something went wrong...", err);
       return;
     }
     console.log(data);
   });
+
   console.log(`🚀 Server running on http://localhost:${PORT}`);
 });

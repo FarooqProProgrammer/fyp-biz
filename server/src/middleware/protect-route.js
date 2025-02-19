@@ -1,11 +1,10 @@
-import { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
 
 // Use the secret key from environment variable or fallback to a default value
 const SECRET_KEY = process.env.JWT_SECRET || "your-secret-key"; 
 
 // Middleware function to protect routes
-export const protectRoute = (req: Request, res: Response, next: NextFunction): void => {
+export const protectRoute = (req, res, next) => {
   const authHeader = req.headers.authorization || req.cookies.token;
 
   if (!authHeader || !authHeader.startsWith("Bearer ")) {
@@ -16,7 +15,7 @@ export const protectRoute = (req: Request, res: Response, next: NextFunction): v
   const token = authHeader.split(" ")[1];
 
   try {
-    const decoded = jwt.verify(token, SECRET_KEY) as { id: string };
+    const decoded = jwt.verify(token, SECRET_KEY);
 
     req.user = { id: decoded.id };
 
