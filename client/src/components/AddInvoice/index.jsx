@@ -28,6 +28,7 @@ import {
 } from "../ui/select";
 import { parseCookies } from "nookies";
 import apiClient from "@/lib/axios";
+import { useGetAllServiceQuery } from "@/redux/services/apiSlice";
 
 const AddInvoice = () => {
   const [open, setOpen] = useState(false); // State to manage dialog visibility
@@ -40,6 +41,27 @@ const AddInvoice = () => {
   });
 
   const { data } = useGetAllCustomerQuery();
+
+
+  const [service, setService] = useState([])
+
+
+
+  useEffect(()=>{
+    const fetchService = async () => {
+      const response = await apiClient.get("/service");
+      setService(response.data.service);
+    }
+    fetchService();
+  },[])
+
+
+
+  useEffect(()=>{
+    console.log(service)
+  },[service])
+
+
   const cookies = parseCookies();
   const token = cookies.token;
 
@@ -65,8 +87,8 @@ const AddInvoice = () => {
     try {
       const response = await apiClient.post("/invoice", data);
       console.log("Invoice Created:", response.data);
-      setOpen(false); // Close dialog on success
-      reset(); // Reset form after submission
+      setOpen(false);
+      reset(); 
     } catch (error) {
       console.error("Error creating invoice:", error);
     }
@@ -101,6 +123,24 @@ const AddInvoice = () => {
               </SelectContent>
             </Select>
           </div>
+
+          <div className="grid gap-4">
+            <h3 className="font-semibold text-lg">Services</h3>
+            <Select onValueChange={(value) => setValue("Service", value)}>
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Select Service" />
+              </SelectTrigger>
+              <SelectContent>
+                {service?.map((item, index) => (
+                  <SelectItem key={index} value={item._id}>
+                    {item.serviceName}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+
 
           {/* Invoice Details */}
           <div className="grid gap-4">

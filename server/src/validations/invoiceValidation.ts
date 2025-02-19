@@ -4,6 +4,7 @@ export const invoiceSchema = Joi.object({
   clientId: Joi.string().optional(), 
   invoiceNumber: Joi.string().required(),
   invoiceDate: Joi.date().required(),
+  Service: Joi.string().required(),
   invoiceAmount: Joi.number().required(),
   status: Joi.string().valid("pending", "paid", "cancelled").default("pending"),
   items: Joi.array()

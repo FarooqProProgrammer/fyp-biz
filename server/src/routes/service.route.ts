@@ -7,7 +7,7 @@ const serviceRouter: Router = express.Router();
 
 
 
-serviceRouter.route("/service").post(protectRoute, createService).get(getAllService)
+serviceRouter.route("/service").post(protectRoute, createService).get(protectRoute,getAllService)
 serviceRouter.route("/service/:id").put(updateService).delete(deleteService)
 
 
