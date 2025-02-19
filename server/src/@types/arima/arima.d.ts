@@ -1,3 +1,4 @@
+
 declare module "timeseries-analysis" {
     export default class TS {
         constructor(data?: [number, number][]);

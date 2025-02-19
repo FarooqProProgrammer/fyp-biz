@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "nodemon",
     "build": "tsup && ts-node postbuild.js",
-    "start": "node dist/server.js",
+    "start": "npm run build && nodemon dist/server.js",
     "run-sale-server": "python ./src/scripts/forecast.py",
     "lint": "eslint 'src/**/*.{js,ts}' --fix",
     "test": "jest"

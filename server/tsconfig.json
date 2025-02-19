@@ -12,7 +12,7 @@
     "forceConsistentCasingInFileNames": true,
     "resolveJsonModule": true,
     "declaration": true,
-    "typeRoots": ["./src/@types"],
+    "typeRoots": ["./src/@types","./src/@types/**/*.d.ts"],
     "sourceMap": true
   },
   "include": ["src"],
