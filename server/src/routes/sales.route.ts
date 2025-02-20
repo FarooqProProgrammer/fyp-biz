@@ -1,6 +1,6 @@
 import express from "express";
-// @ts-ignore
-import { GenerateSales } from "../controller/sales.controller.js";
+import { GenerateSales } from "../controller/sales.controller";
+
 
 const SalesRouter = express.Router();
 
